@@ -1,0 +1,2890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual AI Workflow Designer</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f8f9fa;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        .workflow-designer {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* Header Styles */
+        .designer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+            position: relative;
+            min-height: 80px;
+            flex-shrink: 0;
+        }
+
+        .header-left h1 {
+            margin: 0;
+            color: #212529;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: #495057;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+
+        .btn-outline:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        /* Main Content */
+        .designer-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Component Library Sidebar */
+        .component-library {
+            width: 280px;
+            min-width: 280px;
+            background: white;
+            border-right: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 500;
+            flex-shrink: 0;
+        }
+
+        .library-header {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .library-header h3 {
+            margin: 0;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .component-category {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .category-title {
+            padding: 1rem;
+            background: #f8f9fa;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-title:hover {
+            background: #e9ecef;
+        }
+
+        .category-toggle {
+            transition: transform 0.2s ease;
+        }
+
+        .category-collapsed .category-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .category-items {
+            transition: max-height 0.3s ease;
+            overflow: hidden;
+        }
+
+        .category-collapsed .category-items {
+            max-height: 0;
+        }
+
+        .component-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            cursor: grab;
+            border-bottom: 1px solid #f1f3f4;
+            transition: all 0.2s ease;
+            user-select: none;
+            background: white;
+        }
+
+        .component-item:hover {
+            background: #f8f9fa;
+            transform: translateX(2px);
+        }
+
+        .component-item:active {
+            cursor: grabbing;
+            background: #e9ecef;
+            transform: scale(0.98);
+        }
+
+        .component-item.dragging {
+            opacity: 0.7;
+            background: #e9ecef;
+            transform: rotate(2deg);
+        }
+
+        .component-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e3f2fd;
+            border-radius: 6px;
+            margin-right: 0.75rem;
+            color: #1976d2;
+            flex-shrink: 0;
+        }
+
+        .ai-component .component-icon {
+            background: #e8f5e8;
+            color: #388e3c;
+        }
+
+        .automation-component .component-icon {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .logic-component .component-icon {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .component-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .component-name {
+            font-weight: 500;
+            color: #212529;
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .component-description {
+            color: #6c757d;
+            font-size: 0.8rem;
+            line-height: 1.2;
+        }
+
+        /* Canvas Area */
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 300px;
+        }
+
+        .canvas-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: white;
+            border-bottom: 1px solid #dee2e6;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .workflow-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .canvas-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .workflow-canvas {
+            flex: 1;
+            position: relative;
+            background: #fafafa;
+            background-image: 
+                radial-gradient(circle, #ddd 1px, transparent 1px);
+            background-size: 20px 20px;
+            overflow: auto;
+            cursor: default;
+            min-height: 500px;
+            width: 100%;
+        }
+
+        .canvas-drop-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px dashed transparent;
+            transition: all 0.2s ease;
+            pointer-events: none;
+        }
+
+        .canvas-drop-zone.drag-over {
+            border-color: #007bff;
+            background: rgba(0,123,255,0.05);
+        }
+
+        /* Node Styles */
+        .workflow-node {
+            position: absolute;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            min-width: 180px;
+            cursor: move;
+            user-select: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .workflow-node:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+        }
+
+        .workflow-node.selected {
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .workflow-node.ai-node {
+            border-color: #28a745;
+        }
+
+        .workflow-node.ai-node:hover,
+        .workflow-node.ai-node.selected {
+            border-color: #28a745;
+            box-shadow: 0 0 0 2px rgba(40,167,69,0.25);
+        }
+
+        .node-header {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .node-icon {
+            margin-right: 0.5rem;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .ai-node .node-icon {
+            color: #28a745;
+        }
+
+        .automation-node .node-icon {
+            color: #f57c00;
+        }
+
+        .logic-node .node-icon {
+            color: #7b1fa2;
+        }
+
+        .node-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .node-delete {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #dc3545;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .node-delete:hover {
+            background: rgba(220,53,69,0.1);
+            border-radius: 50%;
+        }
+
+        .node-body {
+            padding: 0.75rem;
+        }
+
+        .node-description {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .node-ports {
+            margin: 0.5rem 0;
+        }
+
+        .node-port {
+            display: flex;
+            align-items: center;
+            margin: 0.25rem 0;
+            font-size: 0.8rem;
+        }
+
+        .node-port.input {
+            justify-content: flex-start;
+        }
+
+        .node-port.output {
+            justify-content: flex-end;
+            cursor: pointer;
+        }
+
+        .port-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #6c757d;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px #6c757d;
+            transition: all 0.2s ease;
+        }
+
+        .node-port.input .port-dot {
+            margin-right: 0.5rem;
+        }
+
+        .node-port.output .port-dot {
+            margin-left: 0.5rem;
+        }
+
+        .node-port.output:hover .port-dot {
+            background: #007bff;
+            box-shadow: 0 0 0 1px #007bff;
+            transform: scale(1.2);
+        }
+
+        .port-label {
+            color: #495057;
+            font-weight: 500;
+        }
+
+        /* Properties Panel */
+        .properties-panel {
+            width: 280px;
+            min-width: 280px;
+            background: white;
+            border-left: 1px solid #dee2e6;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .properties-header {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .properties-header h3 {
+            margin: 0;
+            color: #495057;
+            font-size: 1.1rem;
+        }
+
+        .properties-content {
+            padding: 1rem;
+            flex: 1;
+        }
+
+        .property-group {
+            margin-bottom: 1rem;
+        }
+
+        .property-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .property-group input,
+        .property-group select,
+        .property-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .property-group input:focus,
+        .property-group select:focus,
+        .property-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+            background-color: #fff;
+            cursor: text;
+        }
+
+        .property-group input,
+        .property-group textarea {
+            cursor: text;
+        }
+
+        .property-group input[type="checkbox"],
+        .property-group input[type="range"] {
+            cursor: pointer;
+        }
+
+        /* Node Execution Styles */
+        .node-running {
+            background: linear-gradient(45deg, #e8f4fd, #fff3cd);
+            border-color: #007bff;
+            box-shadow: 0 0 15px rgba(0,123,255,0.3);
+        }
+
+        .execution-indicator {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #007bff;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,123,255,0.4);
+        }
+
+        .execution-success {
+            position: absolute;
+            top: -15px;
+            right: -15px;
+            background: #28a745;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(40,167,69,0.4);
+        }
+
+        /* Node Results Display */
+        .node-results {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            font-size: 0.8rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .results-header {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-item {
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-item strong {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        .generated-text,
+        .description-text,
+        .transcription-text,
+        .translated-text {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+            font-style: italic;
+            color: #495057;
+            line-height: 1.3;
+        }
+
+        .result-breakdown {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+        }
+
+        .result-breakdown div {
+            text-align: center;
+            padding: 0.25rem;
+            background: #f8f9fa;
+            border-radius: 3px;
+        }
+
+        .sentiment-positive {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .sentiment-negative {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .sentiment-neutral {
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .status-success {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .object-tag {
+            display: inline-block;
+            background: #e9ecef;
+            color: #495057;
+            padding: 0.2rem 0.4rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            margin: 0.1rem;
+            font-weight: 500;
+        }
+
+        .property-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            font-weight: normal !important;
+            cursor: pointer;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+            margin-bottom: 0;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            color: #212529;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        .templates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+        }
+
+        .template-card {
+            padding: 1.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .template-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.1);
+        }
+
+        .template-icon {
+            font-size: 2rem;
+            color: #007bff;
+            margin-bottom: 1rem;
+        }
+
+        .template-card h3 {
+            margin: 0 0 0.5rem 0;
+            color: #212529;
+        }
+
+        .template-card p {
+            margin: 0 0 1rem 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .template-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .tag {
+            padding: 0.25rem 0.5rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: #495057;
+        }
+
+        /* Execution Status */
+        .execution-status {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            max-width: 90vw;
+            z-index: 1000;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #ddd;
+            background: #f8f9fa;
+        }
+
+        .status-content {
+            padding: 1rem;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            color: #007bff;
+        }
+
+        .loading-spinner i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Connection line */
+        .connection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+            background: rgba(250, 250, 250, 0.95);
+            z-index: 5;
+        }
+
+        .welcome-content {
+            max-width: 600px;
+        }
+
+        .welcome-icon {
+            font-size: 4rem;
+            color: #007bff;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-content h2 {
+            margin: 0 0 1rem 0;
+            color: #212529;
+            font-size: 2rem;
+        }
+
+        .welcome-content p {
+            margin: 0 0 2rem 0;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+
+        .welcome-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Animation */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .node-running {
+            animation: pulse 2s infinite;
+            border-color: #28a745 !important;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fa-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Desktop optimizations */
+        @media (min-width: 1025px) {
+            .workflow-canvas {
+                min-height: calc(100vh - 160px); /* Account for header and toolbar */
+            }
+            
+            .canvas-container {
+                min-width: 400px;
+            }
+        }
+
+        /* Mobile and Tablet Responsive */
+        @media (max-width: 1024px) {
+            .designer-header {
+                padding: 0.75rem 1rem;
+            }
+            
+            .header-left h1 {
+                font-size: 1.25rem;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .component-library {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 280px;
+                transform: translateX(-100%);
+                z-index: 1500;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            }
+
+            .component-library.mobile-open {
+                transform: translateX(0);
+            }
+
+            .properties-panel {
+                position: fixed;
+                top: 0;
+                right: 0;
+                height: 100vh;
+                width: 280px;
+                transform: translateX(100%);
+                z-index: 1500;
+                box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            }
+
+            .properties-panel.mobile-open {
+                transform: translateX(0);
+            }
+
+            .canvas-container {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .mobile-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 1000;
+                display: none;
+            }
+
+            .mobile-overlay.active {
+                display: block;
+            }
+
+            .canvas-toolbar {
+                padding: 0.5rem;
+            }
+
+            .canvas-actions {
+                gap: 0.25rem;
+            }
+
+            .btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .component-library,
+            .properties-panel {
+                width: 100vw;
+            }
+
+            .welcome-content h2 {
+                font-size: 1.5rem;
+            }
+
+            .welcome-content p {
+                font-size: 1rem;
+            }
+
+            .welcome-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .modal-content {
+                max-width: 95vw;
+                margin: 1rem;
+            }
+
+            .templates-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (pointer: coarse) {
+            .component-item {
+                padding: 1rem;
+                min-height: 60px;
+            }
+
+            .btn {
+                padding: 0.75rem 1rem;
+                min-height: 44px;
+            }
+
+            .node-delete {
+                width: 30px;
+                height: 30px;
+                font-size: 1.5rem;
+            }
+
+            .port-dot {
+                width: 12px;
+                height: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="workflow-designer">
+        <!-- Mobile Overlay -->
+        <div class="mobile-overlay" id="mobileOverlay" onclick="closeMobilePanels()"></div>
+
+        <!-- Header -->
+        <header class="designer-header">
+            <div class="header-left">
+                <h1>Visual AI Workflow Designer</h1>
+                <p class="subtitle">Build powerful AI workflows without coding</p>
+            </div>
+            <div class="header-right">
+                <button class="mobile-menu-btn" onclick="toggleComponentLibrary()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <button class="btn btn-outline" onclick="showTemplates()">
+                    <i class="fas fa-layer-group"></i>
+                    <span class="desktop-only">Templates</span>
+                </button>
+                <button class="btn btn-primary" onclick="createNewWorkflow()">
+                    <i class="fas fa-plus"></i>
+                    <span class="desktop-only">New</span>
+                </button>
+                <button class="mobile-menu-btn" onclick="togglePropertiesPanel()" style="display: none;">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="designer-content">
+            <!-- Component Library Sidebar -->
+            <aside class="component-library" id="componentLibrary">
+                <div class="library-header">
+                    <h3>AI Components Library</h3>
+                </div>
+                
+                <!-- AI Components -->
+                <div class="component-category">
+                    <div class="category-title" onclick="toggleCategory(this)">
+                        AI Components
+                        <i class="fas fa-chevron-down category-toggle"></i>
+                    </div>
+                    <div class="category-items">
+                        <div class="component-item ai-component" data-component-type="ai-text" onclick="addComponentToCanvas('ai-text')">
+                            <div class="component-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Text Generation</div>
+                                <div class="component-description">Generate text using AI models</div>
+                            </div>
+                        </div>
+                        <div class="component-item ai-component" data-component-type="ai-image" onclick="addComponentToCanvas('ai-image')">
+                            <div class="component-icon">
+                                <i class="fas fa-image"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Image Analysis</div>
+                                <div class="component-description">Analyze images with computer vision</div>
+                            </div>
+                        </div>
+                        <div class="component-item ai-component" data-component-type="ai-speech" onclick="addComponentToCanvas('ai-speech')">
+                            <div class="component-icon">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Speech to Text</div>
+                                <div class="component-description">Convert audio to text</div>
+                            </div>
+                        </div>
+                        <div class="component-item ai-component" data-component-type="ai-translate" onclick="addComponentToCanvas('ai-translate')">
+                            <div class="component-icon">
+                                <i class="fas fa-language"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Translation</div>
+                                <div class="component-description">Translate between languages</div>
+                            </div>
+                        </div>
+                        <div class="component-item ai-component" data-component-type="ai-sentiment" onclick="addComponentToCanvas('ai-sentiment')">
+                            <div class="component-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Sentiment Analysis</div>
+                                <div class="component-description">Analyze text sentiment</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Automation Components -->
+                <div class="component-category">
+                    <div class="category-title" onclick="toggleCategory(this)">
+                        Automation
+                        <i class="fas fa-chevron-down category-toggle"></i>
+                    </div>
+                    <div class="category-items">
+                        <div class="component-item automation-component" data-component-type="automation-email" onclick="addComponentToCanvas('automation-email')">
+                            <div class="component-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Send Email</div>
+                                <div class="component-description">Send emails automatically</div>
+                            </div>
+                        </div>
+                        <div class="component-item automation-component" data-component-type="automation-slack" onclick="addComponentToCanvas('automation-slack')">
+                            <div class="component-icon">
+                                <i class="fab fa-slack"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Slack Message</div>
+                                <div class="component-description">Send messages to Slack</div>
+                            </div>
+                        </div>
+                        <div class="component-item automation-component" data-component-type="automation-zapier" onclick="addComponentToCanvas('automation-zapier')">
+                            <div class="component-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Zapier Webhook</div>
+                                <div class="component-description">Trigger Zapier workflows</div>
+                            </div>
+                        </div>
+                        <div class="component-item automation-component" data-component-type="automation-powerautomate" onclick="addComponentToCanvas('automation-powerautomate')">
+                            <div class="component-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Power Automate</div>
+                                <div class="component-description">Trigger Microsoft flows</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logic Components -->
+                <div class="component-category">
+                    <div class="category-title" onclick="toggleCategory(this)">
+                        Logic & Control
+                        <i class="fas fa-chevron-down category-toggle"></i>
+                    </div>
+                    <div class="category-items">
+                        <div class="component-item logic-component" data-component-type="logic-condition" onclick="addComponentToCanvas('logic-condition')">
+                            <div class="component-icon">
+                                <i class="fas fa-code-branch"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Condition</div>
+                                <div class="component-description">Conditional logic</div>
+                            </div>
+                        </div>
+                        <div class="component-item logic-component" data-component-type="logic-loop" onclick="addComponentToCanvas('logic-loop')">
+                            <div class="component-icon">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Loop</div>
+                                <div class="component-description">Iterate over data</div>
+                            </div>
+                        </div>
+                        <div class="component-item logic-component" data-component-type="data-input" onclick="addComponentToCanvas('data-input')">
+                            <div class="component-icon">
+                                <i class="fas fa-play"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Input</div>
+                                <div class="component-description">Manual data input</div>
+                            </div>
+                        </div>
+                        <div class="component-item logic-component" data-component-type="data-output" onclick="addComponentToCanvas('data-output')">
+                            <div class="component-icon">
+                                <i class="fas fa-flag-checkered"></i>
+                            </div>
+                            <div class="component-info">
+                                <div class="component-name">Output</div>
+                                <div class="component-description">Display results</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Canvas Container -->
+            <div class="canvas-container">
+                <!-- Canvas Toolbar -->
+                <div class="canvas-toolbar">
+                    <div class="workflow-name" id="workflowName">New Workflow</div>
+                    <div class="canvas-actions">
+                        <button class="btn btn-secondary" onclick="clearCanvas()">
+                            <i class="fas fa-trash"></i>
+                            Clear
+                        </button>
+                        <button class="btn btn-primary" onclick="saveWorkflow()">
+                            <i class="fas fa-save"></i>
+                            Save
+                        </button>
+                        <button class="btn btn-success" onclick="runWorkflow()">
+                            <i class="fas fa-play"></i>
+                            Run
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Canvas -->
+                <div class="workflow-canvas" id="workflowCanvas">
+                    <!-- Drop zone for better visual feedback -->
+                    <div class="canvas-drop-zone" id="canvasDropZone"></div>
+
+                    <!-- Welcome Screen -->
+                    <div class="welcome-screen" id="welcomeScreen">
+                        <div class="welcome-content">
+                            <div class="welcome-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h2>Welcome to Visual AI Workflow Designer</h2>
+                            <p>Click on components from the left panel or drag them to create powerful AI workflows without coding.</p>
+                            <div class="welcome-actions">
+                                <button class="btn btn-primary" onclick="hideWelcome()">
+                                    <i class="fas fa-plus"></i>
+                                    Start Building
+                                </button>
+                                <button class="btn btn-outline" onclick="showTemplates()">
+                                    <i class="fas fa-layer-group"></i>
+                                    Browse Templates
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Connection overlay for drawing connections -->
+                    <svg class="connection-overlay" id="connectionOverlay"></svg>
+                </div>
+            </div>
+
+            <!-- Properties Panel -->
+            <aside class="properties-panel" id="propertiesPanel">
+                <div class="properties-header">
+                    <h3>Properties</h3>
+                </div>
+                <div class="properties-content" id="propertiesContent">
+                    <p style="color: #6c757d; text-align: center; margin-top: 2rem;">
+                        Select a node to edit its properties
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Templates Modal -->
+    <div class="modal-overlay hidden" id="templatesModal" onclick="hideTemplates()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Workflow Templates</h2>
+                <button class="close-btn" onclick="hideTemplates()">&times;</button>
+            </div>
+            <div class="templates-grid">
+                <div class="template-card" onclick="createFromTemplate('customer-support')">
+                    <div class="template-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>AI Customer Support</h3>
+                    <p>Automated customer support with sentiment analysis and smart routing</p>
+                    <div class="template-tags">
+                        <span class="tag">AI</span>
+                        <span class="tag">Customer Service</span>
+                        <span class="tag">Automation</span>
+                    </div>
+                </div>
+                <div class="template-card" onclick="createFromTemplate('content-moderation')">
+                    <div class="template-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Content Moderation</h3>
+                    <p>Automatically moderate user-generated content using AI</p>
+                    <div class="template-tags">
+                        <span class="tag">AI</span>
+                        <span class="tag">Moderation</span>
+                        <span class="tag">Safety</span>
+                    </div>
+                </div>
+                <div class="template-card" onclick="createFromTemplate('document-processing')">
+                    <div class="template-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h3>Document Processing</h3>
+                    <p>Extract and process information from documents</p>
+                    <div class="template-tags">
+                        <span class="tag">AI</span>
+                        <span class="tag">OCR</span>
+                        <span class="tag">Documents</span>
+                    </div>
+                </div>
+                <div class="template-card" onclick="createFromTemplate('social-media-monitor')">
+                    <div class="template-icon">
+                        <i class="fas fa-hashtag"></i>
+                    </div>
+                    <h3>Social Media Monitor</h3>
+                    <p>Monitor social media mentions and respond automatically</p>
+                    <div class="template-tags">
+                        <span class="tag">Social Media</span>
+                        <span class="tag">Monitoring</span>
+                        <span class="tag">AI</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Execution Status -->
+    <div class="execution-status hidden" id="executionStatus">
+        <div class="status-header">
+            <h4 id="statusTitle">Execution Status</h4>
+            <button class="close-btn" onclick="hideExecutionStatus()">&times;</button>
+        </div>
+        <div class="status-content" id="statusContent">
+            <!-- Status content will be populated by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay hidden" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p id="loadingMessage">Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let workflowNodes = [];
+        let workflowConnections = [];
+        let selectedNode = null;
+        let nodeIdCounter = 1;
+        let connectionIdCounter = 1;
+        let draggedComponent = null;
+        let connecting = false;
+        let connectionStart = null;
+        let currentWorkflow = {
+            id: null,
+            name: 'New Workflow',
+            description: '',
+            nodes: [],
+            connections: []
+        };
+
+        // Component definitions
+        const componentDefinitions = {
+            'ai-text': {
+                name: 'Text Generation',
+                description: 'Generate text using AI models',
+                icon: 'fas fa-brain',
+                category: 'ai',
+                inputs: [{ id: 'prompt', name: 'Prompt', type: 'string' }],
+                outputs: [{ id: 'text', name: 'Generated Text', type: 'string' }],
+                properties: {
+                    model: 'gpt-3.5-turbo',
+                    maxTokens: 150,
+                    temperature: 0.7,
+                    systemPrompt: ''
+                }
+            },
+            'ai-image': {
+                name: 'Image Analysis',
+                description: 'Analyze images with computer vision',
+                icon: 'fas fa-image',
+                category: 'ai',
+                inputs: [{ id: 'image', name: 'Image', type: 'file' }],
+                outputs: [{ id: 'analysis', name: 'Analysis Result', type: 'object' }],
+                properties: {
+                    provider: 'azure',
+                    features: ['description', 'tags'],
+                    customPrompt: ''
+                }
+            },
+            'ai-speech': {
+                name: 'Speech to Text',
+                description: 'Convert audio to text',
+                icon: 'fas fa-microphone',
+                category: 'ai',
+                inputs: [{ id: 'audio', name: 'Audio File', type: 'file' }],
+                outputs: [{ id: 'text', name: 'Transcribed Text', type: 'string' }],
+                properties: {
+                    provider: 'azure',
+                    language: 'en-US',
+                    enablePunctuation: true
+                }
+            },
+            'ai-translate': {
+                name: 'Translation',
+                description: 'Translate between languages',
+                icon: 'fas fa-language',
+                category: 'ai',
+                inputs: [{ id: 'text', name: 'Input Text', type: 'string' }],
+                outputs: [{ id: 'translated', name: 'Translated Text', type: 'string' }],
+                properties: {
+                    provider: 'google',
+                    sourceLanguage: 'auto',
+                    targetLanguage: 'es'
+                }
+            },
+            'ai-sentiment': {
+                name: 'Sentiment Analysis',
+                description: 'Analyze text sentiment',
+                icon: 'fas fa-heart',
+                category: 'ai',
+                inputs: [{ id: 'text', name: 'Input Text', type: 'string' }],
+                outputs: [{ id: 'sentiment', name: 'Sentiment Score', type: 'object' }],
+                properties: {
+                    provider: 'azure',
+                    analysisDepth: 'basic'
+                }
+            },
+            'automation-email': {
+                name: 'Send Email',
+                description: 'Send emails automatically',
+                icon: 'fas fa-envelope',
+                category: 'automation',
+                inputs: [
+                    { id: 'to', name: 'To Address', type: 'string' },
+                    { id: 'subject', name: 'Subject', type: 'string' },
+                    { id: 'body', name: 'Email Body', type: 'string' }
+                ],
+                outputs: [{ id: 'status', name: 'Send Status', type: 'boolean' }],
+                properties: {
+                    smtpServer: 'smtp.gmail.com',
+                    port: 587,
+                    enableSsl: true
+                }
+            },
+            'automation-slack': {
+                name: 'Slack Message',
+                description: 'Send messages to Slack',
+                icon: 'fab fa-slack',
+                category: 'automation',
+                inputs: [
+                    { id: 'channel', name: 'Channel', type: 'string' },
+                    { id: 'message', name: 'Message', type: 'string' }
+                ],
+                outputs: [{ id: 'messageId', name: 'Message ID', type: 'string' }],
+                properties: {
+                    botToken: '',
+                    defaultChannel: '#general'
+                }
+            },
+            'automation-zapier': {
+                name: 'Zapier Webhook',
+                description: 'Trigger Zapier workflows',
+                icon: 'fas fa-bolt',
+                category: 'automation',
+                inputs: [{ id: 'data', name: 'Webhook Data', type: 'object' }],
+                outputs: [{ id: 'response', name: 'Webhook Response', type: 'object' }],
+                properties: {
+                    webhookUrl: '',
+                    method: 'POST'
+                }
+            },
+            'automation-powerautomate': {
+                name: 'Power Automate',
+                description: 'Trigger Microsoft flows',
+                icon: 'fas fa-cogs',
+                category: 'automation',
+                inputs: [{ id: 'trigger', name: 'Trigger Data', type: 'object' }],
+                outputs: [{ id: 'result', name: 'Flow Result', type: 'object' }],
+                properties: {
+                    flowUrl: '',
+                    triggerName: ''
+                }
+            },
+            'logic-condition': {
+                name: 'Condition',
+                description: 'Conditional logic',
+                icon: 'fas fa-code-branch',
+                category: 'logic',
+                inputs: [
+                    { id: 'condition', name: 'Condition', type: 'boolean' },
+                    { id: 'trueValue', name: 'True Value', type: 'any' },
+                    { id: 'falseValue', name: 'False Value', type: 'any' }
+                ],
+                outputs: [{ id: 'result', name: 'Result', type: 'any' }],
+                properties: {
+                    operator: 'equals',
+                    compareValue: ''
+                }
+            },
+            'logic-loop': {
+                name: 'Loop',
+                description: 'Iterate over data',
+                icon: 'fas fa-sync-alt',
+                category: 'logic',
+                inputs: [{ id: 'collection', name: 'Collection', type: 'array' }],
+                outputs: [
+                    { id: 'item', name: 'Current Item', type: 'any' },
+                    { id: 'index', name: 'Index', type: 'number' }
+                ],
+                properties: {
+                    maxIterations: 100
+                }
+            },
+            'data-input': {
+                name: 'Input',
+                description: 'Manual data input',
+                icon: 'fas fa-play',
+                category: 'data',
+                inputs: [],
+                outputs: [{ id: 'value', name: 'Input Value', type: 'any' }],
+                properties: {
+                    inputType: 'text',
+                    defaultValue: ''
+                }
+            },
+            'data-output': {
+                name: 'Output',
+                description: 'Display results',
+                icon: 'fas fa-flag-checkered',
+                category: 'data',
+                inputs: [{ id: 'data', name: 'Data to Display', type: 'any' }],
+                outputs: [],
+                properties: {
+                    format: 'json',
+                    showTimestamp: true
+                }
+            }
+        };
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Initializing Visual AI Workflow Designer...');
+            
+            initializeDragAndDrop();
+            initializeCanvas();
+            updatePropertiesPanel();
+            setupMobileHandlers();
+            
+            console.log('Application initialized successfully');
+        });
+
+        // Mobile handlers
+        function setupMobileHandlers() {
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 1024) {
+                    closeMobilePanels();
+                }
+            });
+        }
+
+        function toggleComponentLibrary() {
+            const library = document.getElementById('componentLibrary');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            library.classList.toggle('mobile-open');
+            
+            if (library.classList.contains('mobile-open')) {
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function togglePropertiesPanel() {
+            const panel = document.getElementById('propertiesPanel');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            panel.classList.toggle('mobile-open');
+            
+            if (panel.classList.contains('mobile-open')) {
+                overlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } else {
+                overlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function closeMobilePanels() {
+            const library = document.getElementById('componentLibrary');
+            const panel = document.getElementById('propertiesPanel');
+            const overlay = document.getElementById('mobileOverlay');
+            
+            library.classList.remove('mobile-open');
+            panel.classList.remove('mobile-open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function toggleCategory(titleElement) {
+            const category = titleElement.parentElement;
+            category.classList.toggle('category-collapsed');
+        }
+
+        // Component addition function (works on both mobile and desktop)
+        function addComponentToCanvas(componentType) {
+            console.log('Adding component to canvas:', componentType);
+            
+            // Get canvas center position
+            const canvas = document.getElementById('workflowCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Add some randomness to avoid overlapping
+            const randomOffset = () => (Math.random() - 0.5) * 100;
+            const x = centerX + randomOffset();
+            const y = centerY + randomOffset();
+            
+            createNode(componentType, x, y);
+            hideWelcome();
+            
+            // Close mobile panels after adding component
+            if (window.innerWidth <= 1024) {
+                closeMobilePanels();
+            }
+            
+            console.log('Component added successfully');
+        }
+
+        // Drag and Drop functionality (enhanced for both mobile and desktop)
+        function initializeDragAndDrop() {
+            console.log('Setting up drag and drop...');
+            
+            const componentItems = document.querySelectorAll('.component-item');
+            console.log('Found component items:', componentItems.length);
+            
+            componentItems.forEach((item, index) => {
+                const componentType = item.dataset.componentType;
+                console.log(`Setting up component ${index + 1}:`, componentType);
+                
+                // Desktop drag events
+                if ('ontouchstart' in window === false) {
+                    item.addEventListener('dragstart', function(e) {
+                        console.log('Drag started for:', componentType);
+                        
+                        draggedComponent = componentType;
+                        e.dataTransfer.effectAllowed = 'copy';
+                        e.dataTransfer.setData('text/plain', componentType);
+                        
+                        item.classList.add('dragging');
+                        
+                        // Prevent default image dragging
+                        e.dataTransfer.setDragImage(new Image(), 0, 0);
+                    });
+                    
+                    item.addEventListener('dragend', function(e) {
+                        console.log('Drag ended for:', componentType);
+                        item.classList.remove('dragging');
+                    });
+                    
+                    item.draggable = true;
+                }
+                
+                // Touch events for mobile
+                let touchStartPos = null;
+                
+                item.addEventListener('touchstart', function(e) {
+                    touchStartPos = {
+                        x: e.touches[0].clientX,
+                        y: e.touches[0].clientY,
+                        time: Date.now()
+                    };
+                }, { passive: true });
+                
+                item.addEventListener('touchend', function(e) {
+                    if (touchStartPos) {
+                        const touchEndPos = {
+                            x: e.changedTouches[0].clientX,
+                            y: e.changedTouches[0].clientY,
+                            time: Date.now()
+                        };
+                        
+                        const distance = Math.sqrt(
+                            Math.pow(touchEndPos.x - touchStartPos.x, 2) + 
+                            Math.pow(touchEndPos.y - touchStartPos.y, 2)
+                        );
+                        const duration = touchEndPos.time - touchStartPos.time;
+                        
+                        // If it's a tap (small distance, short duration)
+                        if (distance < 10 && duration < 300) {
+                            e.preventDefault();
+                            // Don't trigger the onclick if we already handled it
+                            return;
+                        }
+                    }
+                    touchStartPos = null;
+                }, { passive: false });
+            });
+            
+            console.log('Drag and drop setup complete');
+        }
+
+        // Canvas functionality
+        function initializeCanvas() {
+            console.log('Setting up canvas...');
+            
+            const canvas = document.getElementById('workflowCanvas');
+            const dropZone = document.getElementById('canvasDropZone');
+            
+            if (!canvas) {
+                console.error('Canvas element not found!');
+                return;
+            }
+            
+            // Desktop drag events
+            canvas.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'copy';
+                dropZone.classList.add('drag-over');
+            });
+            
+            canvas.addEventListener('dragleave', function(e) {
+                if (!canvas.contains(e.relatedTarget)) {
+                    dropZone.classList.remove('drag-over');
+                }
+            });
+            
+            canvas.addEventListener('drop', function(e) {
+                e.preventDefault();
+                console.log('Drop event triggered');
+                
+                dropZone.classList.remove('drag-over');
+                
+                if (draggedComponent) {
+                    console.log('Creating node for:', draggedComponent);
+                    
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    console.log('Drop coordinates:', { x, y });
+                    
+                    createNode(draggedComponent, x, y);
+                    hideWelcome();
+                    
+                    draggedComponent = null;
+                } else {
+                    console.log('No dragged component found');
+                }
+            });
+
+            // Canvas click handling
+            canvas.addEventListener('click', function(e) {
+                if (e.target === canvas || e.target === dropZone) {
+                    deselectAllNodes();
+                }
+            });
+            
+            console.log('Canvas setup complete');
+        }
+
+        // Node creation and management
+        function createNode(componentType, x, y) {
+            console.log('Creating node:', { componentType, x, y });
+            
+            const definition = componentDefinitions[componentType];
+            if (!definition) {
+                console.error('Component definition not found for:', componentType);
+                return;
+            }
+
+            const node = {
+                id: 'node_' + nodeIdCounter++,
+                type: componentType,
+                name: definition.name,
+                description: definition.description,
+                x: Math.max(0, x - 90), // Center the node and ensure it's within bounds
+                y: Math.max(0, y - 40),
+                inputs: [...definition.inputs],
+                outputs: [...definition.outputs],
+                properties: { ...definition.properties }
+            };
+
+            console.log('Created node object:', node);
+
+            workflowNodes.push(node);
+            renderNode(node);
+            selectNode(node);
+            
+            console.log('Total nodes:', workflowNodes.length);
+        }
+
+        function renderNode(node) {
+            console.log('Rendering node:', node.id);
+            
+            const canvas = document.getElementById('workflowCanvas');
+            const definition = componentDefinitions[node.type];
+            
+            const nodeElement = document.createElement('div');
+            nodeElement.className = `workflow-node ${definition.category}-node`;
+            nodeElement.id = node.id;
+            nodeElement.style.left = node.x + 'px';
+            nodeElement.style.top = node.y + 'px';
+            
+            nodeElement.innerHTML = `
+                <div class="node-header">
+                    <div class="node-icon">
+                        <i class="${definition.icon}"></i>
+                    </div>
+                    <div class="node-title">${node.name}</div>
+                    <button class="node-delete" onclick="deleteNode('${node.id}')">&times;</button>
+                </div>
+                <div class="node-body">
+                    <div class="node-description">${node.description}</div>
+                    ${node.inputs.length > 0 ? `
+                    <div class="node-ports inputs">
+                        ${node.inputs.map(input => `
+                        <div class="node-port input" data-port-id="${input.id}">
+                            <div class="port-dot"></div>
+                            <span class="port-label">${input.name}</span>
+                        </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                    ${node.outputs.length > 0 ? `
+                    <div class="node-ports outputs">
+                        ${node.outputs.map(output => `
+                        <div class="node-port output" data-port-id="${output.id}" onclick="startConnection('${node.id}', '${output.id}', event)">
+                            <span class="port-label">${output.name}</span>
+                            <div class="port-dot"></div>
+                        </div>
+                        `).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+
+            // Node click handling
+            nodeElement.addEventListener('click', function(e) {
+                // Don't prevent propagation if clicking on interactive elements
+                const isInteractiveElement = e.target.tagName === 'INPUT' || 
+                                           e.target.tagName === 'TEXTAREA' || 
+                                           e.target.tagName === 'SELECT' || 
+                                           e.target.tagName === 'BUTTON' ||
+                                           e.target.closest('.node-delete') ||
+                                           e.target.closest('.node-port');
+                
+                if (!isInteractiveElement) {
+                    e.stopPropagation();
+                    selectNode(node);
+                    
+                    // Show properties panel on mobile when node is selected
+                    if (window.innerWidth <= 1024) {
+                        const propertiesBtn = document.querySelector('.mobile-menu-btn[onclick="togglePropertiesPanel()"]');
+                        if (propertiesBtn) {
+                            propertiesBtn.style.display = 'block';
+                        }
+                    }
+                }
+            });
+
+            // Make node draggable
+            makeNodeDraggable(nodeElement, node);
+
+            canvas.appendChild(nodeElement);
+            
+            console.log('Node rendered successfully');
+        }
+
+        function makeNodeDraggable(element, node) {
+            let isDragging = false;
+            let dragOffset = { x: 0, y: 0 };
+
+            // Mouse events for desktop
+            element.addEventListener('mousedown', function(e) {
+                if (e.target.closest('.node-delete') || e.target.closest('.node-port.output')) {
+                    return;
+                }
+                
+                isDragging = true;
+                const rect = element.getBoundingClientRect();
+                dragOffset.x = e.clientX - rect.left;
+                dragOffset.y = e.clientY - rect.top;
+                
+                element.style.zIndex = 1000;
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    const canvas = document.getElementById('workflowCanvas');
+                    const canvasRect = canvas.getBoundingClientRect();
+                    
+                    const newX = e.clientX - canvasRect.left - dragOffset.x;
+                    const newY = e.clientY - canvasRect.top - dragOffset.y;
+                    
+                    node.x = Math.max(0, newX);
+                    node.y = Math.max(0, newY);
+                    
+                    element.style.left = node.x + 'px';
+                    element.style.top = node.y + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.zIndex = '';
+                }
+            });
+
+            // Touch events for mobile
+            let touchStart = null;
+            
+            element.addEventListener('touchstart', function(e) {
+                if (e.target.closest('.node-delete') || e.target.closest('.node-port.output')) {
+                    return;
+                }
+                
+                const touch = e.touches[0];
+                const rect = element.getBoundingClientRect();
+                
+                touchStart = {
+                    x: touch.clientX,
+                    y: touch.clientY,
+                    offsetX: touch.clientX - rect.left,
+                    offsetY: touch.clientY - rect.top,
+                    time: Date.now()
+                };
+                
+                element.style.zIndex = 1000;
+            }, { passive: true });
+
+            element.addEventListener('touchmove', function(e) {
+                if (!touchStart) return;
+                
+                e.preventDefault();
+                
+                const touch = e.touches[0];
+                const canvas = document.getElementById('workflowCanvas');
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                const newX = touch.clientX - canvasRect.left - touchStart.offsetX;
+                const newY = touch.clientY - canvasRect.top - touchStart.offsetY;
+                
+                node.x = Math.max(0, newX);
+                node.y = Math.max(0, newY);
+                
+                element.style.left = node.x + 'px';
+                element.style.top = node.y + 'px';
+            }, { passive: false });
+
+            element.addEventListener('touchend', function(e) {
+                if (touchStart) {
+                    element.style.zIndex = '';
+                    touchStart = null;
+                }
+            }, { passive: true });
+        }
+
+        function selectNode(node) {
+            deselectAllNodes();
+            
+            const nodeElement = document.getElementById(node.id);
+            if (nodeElement) {
+                nodeElement.classList.add('selected');
+            }
+            
+            selectedNode = node;
+            updatePropertiesPanel();
+            
+            console.log('Node selected:', node.id);
+        }
+
+        function deselectAllNodes() {
+            document.querySelectorAll('.workflow-node').forEach(node => {
+                node.classList.remove('selected');
+            });
+            selectedNode = null;
+            updatePropertiesPanel();
+        }
+
+        function deleteNode(nodeId) {
+            console.log('Deleting node:', nodeId);
+            
+            // Remove from array
+            workflowNodes = workflowNodes.filter(node => node.id !== nodeId);
+            
+            // Remove connections
+            workflowConnections = workflowConnections.filter(conn => 
+                conn.sourceNodeId !== nodeId && conn.targetNodeId !== nodeId
+            );
+            
+            // Remove from DOM
+            const nodeElement = document.getElementById(nodeId);
+            if (nodeElement) {
+                nodeElement.remove();
+            }
+            
+            // Update UI
+            if (selectedNode && selectedNode.id === nodeId) {
+                selectedNode = null;
+                updatePropertiesPanel();
+                
+                // Hide properties panel button on mobile if no node selected
+                if (window.innerWidth <= 1024) {
+                    const propertiesBtn = document.querySelector('.mobile-menu-btn[onclick="togglePropertiesPanel()"]');
+                    if (propertiesBtn) {
+                        propertiesBtn.style.display = 'none';
+                    }
+                }
+            }
+            
+            console.log('Node deleted, remaining nodes:', workflowNodes.length);
+        }
+
+        // Properties panel
+        function updatePropertiesPanel() {
+            const propertiesContent = document.getElementById('propertiesContent');
+            
+            if (!selectedNode) {
+                propertiesContent.innerHTML = `
+                    <p style="color: #6c757d; text-align: center; margin-top: 2rem;">
+                        Select a node to edit its properties
+                    </p>
+                `;
+                return;
+            }
+
+            const definition = componentDefinitions[selectedNode.type];
+            
+            let html = `
+                <div class="property-group">
+                    <label>Node Name:</label>
+                    <input type="text" value="${selectedNode.name}" 
+                           onchange="updateNodeProperty('name', this.value)"
+                           oninput="updateNodeProperty('name', this.value)"
+                           onkeydown="handleInputKeydown(event, 'name', this.value)"
+                           onclick="this.focus(); this.select();"
+                           placeholder="Enter node name...">
+                </div>
+                <div class="property-group">
+                    <label>Description:</label>
+                    <textarea onchange="updateNodeProperty('description', this.value)"
+                              oninput="updateNodeProperty('description', this.value)"
+                              onkeydown="handleTextareaKeydown(event, 'description', this.value)"
+                              onclick="this.focus();"
+                              placeholder="Enter description...">${selectedNode.description}</textarea>
+                </div>
+            `;
+
+            // Add type-specific properties
+            if (selectedNode.type.startsWith('ai-text')) {
+                html += `
+                    <div class="property-group">
+                        <label>AI Model:</label>
+                        <select onchange="updateNodeProperty('properties.model', this.value)">
+                            <option value="gpt-3.5-turbo" ${selectedNode.properties.model === 'gpt-3.5-turbo' ? 'selected' : ''}>GPT-3.5 Turbo</option>
+                            <option value="gpt-4" ${selectedNode.properties.model === 'gpt-4' ? 'selected' : ''}>GPT-4</option>
+                            <option value="claude-3-sonnet" ${selectedNode.properties.model === 'claude-3-sonnet' ? 'selected' : ''}>Claude 3 Sonnet</option>
+                        </select>
+                    </div>
+                    <div class="property-group">
+                        <label>Max Tokens:</label>
+                        <input type="number" min="1" max="4096" value="${selectedNode.properties.maxTokens}" 
+                               onchange="updateNodeProperty('properties.maxTokens', parseInt(this.value))"
+                               oninput="updateNodeProperty('properties.maxTokens', parseInt(this.value))"
+                               onkeydown="handleInputKeydown(event, 'properties.maxTokens', parseInt(this.value))"
+                               onclick="this.focus(); this.select();"
+                               placeholder="1024">
+                    </div>
+                    <div class="property-group">
+                        <label>Temperature: ${selectedNode.properties.temperature}</label>
+                        <input type="range" min="0" max="2" step="0.1" value="${selectedNode.properties.temperature}" onchange="updateNodeProperty('properties.temperature', parseFloat(this.value)); this.previousElementSibling.textContent = 'Temperature: ' + this.value;">
+                    </div>
+                `;
+            } else if (selectedNode.type.startsWith('ai-image')) {
+                html += `
+                    <div class="property-group">
+                        <label>Provider:</label>
+                        <select onchange="updateNodeProperty('properties.provider', this.value)">
+                            <option value="azure" ${selectedNode.properties.provider === 'azure' ? 'selected' : ''}>Azure Computer Vision</option>
+                            <option value="google" ${selectedNode.properties.provider === 'google' ? 'selected' : ''}>Google Cloud Vision</option>
+                            <option value="openai" ${selectedNode.properties.provider === 'openai' ? 'selected' : ''}>OpenAI Vision</option>
+                        </select>
+                    </div>
+                    <div class="property-group">
+                        <label>Analysis Features:</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" ${selectedNode.properties.features.includes('description') ? 'checked' : ''} onchange="toggleFeature('description', this.checked)">
+                                Description
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" ${selectedNode.properties.features.includes('tags') ? 'checked' : ''} onchange="toggleFeature('tags', this.checked)">
+                                Tags
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" ${selectedNode.properties.features.includes('objects') ? 'checked' : ''} onchange="toggleFeature('objects', this.checked)">
+                                Object Detection
+                            </label>
+                        </div>
+                    </div>
+                `;
+            } else if (selectedNode.type.startsWith('automation-email')) {
+                html += `
+                    <div class="property-group">
+                        <label>SMTP Server:</label>
+                        <input type="text" value="${selectedNode.properties.smtpServer}" 
+                               onchange="updateNodeProperty('properties.smtpServer', this.value)"
+                               oninput="updateNodeProperty('properties.smtpServer', this.value)"
+                               onkeydown="handleInputKeydown(event, 'properties.smtpServer', this.value)"
+                               onclick="this.focus(); this.select();"
+                               placeholder="smtp.gmail.com">
+                    </div>
+                    <div class="property-group">
+                        <label>Port:</label>
+                        <input type="number" value="${selectedNode.properties.port}" 
+                               onchange="updateNodeProperty('properties.port', parseInt(this.value))"
+                               oninput="updateNodeProperty('properties.port', parseInt(this.value))"
+                               onkeydown="handleInputKeydown(event, 'properties.port', parseInt(this.value))"
+                               onclick="this.focus(); this.select();"
+                               placeholder="587">
+                    </div>
+                    <div class="property-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" ${selectedNode.properties.enableSsl ? 'checked' : ''} onchange="updateNodeProperty('properties.enableSsl', this.checked)">
+                            Enable SSL/TLS
+                        </label>
+                    </div>
+                `;
+            }
+
+            propertiesContent.innerHTML = html;
+        }
+
+        function updateNodeProperty(path, value) {
+            if (!selectedNode) return;
+            
+            console.log('Updating property:', path, 'to value:', value);
+            
+            const keys = path.split('.');
+            let obj = selectedNode;
+            
+            for (let i = 0; i < keys.length - 1; i++) {
+                obj = obj[keys[i]];
+            }
+            
+            obj[keys[keys.length - 1]] = value;
+            
+            // Update node display if name changed
+            if (path === 'name') {
+                const nodeElement = document.getElementById(selectedNode.id);
+                if (nodeElement) {
+                    const titleElement = nodeElement.querySelector('.node-title');
+                    if (titleElement) {
+                        titleElement.textContent = value;
+                    }
+                }
+            }
+            
+            // Update description display
+            if (path === 'description') {
+                const nodeElement = document.getElementById(selectedNode.id);
+                if (nodeElement) {
+                    const descElement = nodeElement.querySelector('.node-description');
+                    if (descElement) {
+                        descElement.textContent = value;
+                    }
+                }
+            }
+            
+            // Visual feedback - show save indicator
+            showSaveIndicator();
+            
+            console.log('Property updated:', { path, value, node: selectedNode });
+        }
+
+        function showSaveIndicator() {
+            // Remove existing indicator if any
+            const existing = document.querySelector('.save-indicator');
+            if (existing) existing.remove();
+            
+            const indicator = document.createElement('div');
+            indicator.className = 'save-indicator';
+            indicator.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #28a745;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 14px;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            `;
+            indicator.innerHTML = '<i class="fas fa-check"></i> Saved';
+            document.body.appendChild(indicator);
+            
+            // Animate in
+            setTimeout(() => indicator.style.opacity = '1', 10);
+            // Animate out
+            setTimeout(() => indicator.style.opacity = '0', 1500);
+            // Remove
+            setTimeout(() => {
+                if (indicator.parentNode) {
+                    indicator.parentNode.removeChild(indicator);
+                }
+            }, 2000);
+        }
+
+        function handleInputKeydown(event, propertyPath, value) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                updateNodeProperty(propertyPath, event.target.value);
+                event.target.blur(); // Remove focus after Enter
+                showSaveIndicator();
+            }
+        }
+
+        function handleTextareaKeydown(event, propertyPath, value) {
+            if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                updateNodeProperty(propertyPath, event.target.value);
+                event.target.blur(); // Remove focus after Ctrl+Enter
+                showSaveIndicator();
+            }
+        }
+
+        function toggleFeature(feature, enabled) {
+            if (!selectedNode || !selectedNode.properties.features) return;
+            
+            if (enabled) {
+                if (!selectedNode.properties.features.includes(feature)) {
+                    selectedNode.properties.features.push(feature);
+                }
+            } else {
+                selectedNode.properties.features = selectedNode.properties.features.filter(f => f !== feature);
+            }
+            
+            console.log('Feature toggled:', { feature, enabled, features: selectedNode.properties.features });
+        }
+
+        // Connection functionality
+        function startConnection(nodeId, portId, event) {
+            event.stopPropagation();
+            connecting = true;
+            connectionStart = { nodeId, portId };
+            
+            const portElement = event.target.closest('.node-port');
+            const rect = portElement.getBoundingClientRect();
+            const canvasRect = document.getElementById('workflowCanvas').getBoundingClientRect();
+            
+            const startX = rect.left + rect.width / 2 - canvasRect.left;
+            const startY = rect.top + rect.height / 2 - canvasRect.top;
+            
+            drawConnectionLine(startX, startY, startX, startY);
+            
+            document.addEventListener('mousemove', onConnectionDrag);
+            document.addEventListener('mouseup', onConnectionEnd);
+            
+            console.log('Connection started:', { nodeId, portId });
+        }
+
+        function onConnectionDrag(event) {
+            if (!connecting) return;
+            
+            const canvasRect = document.getElementById('workflowCanvas').getBoundingClientRect();
+            const currentX = event.clientX - canvasRect.left;
+            const currentY = event.clientY - canvasRect.top;
+            
+            const portElement = document.querySelector(`#${connectionStart.nodeId} .node-port[data-port-id="${connectionStart.portId}"]`);
+            const rect = portElement.getBoundingClientRect();
+            const startX = rect.left + rect.width / 2 - canvasRect.left;
+            const startY = rect.top + rect.height / 2 - canvasRect.top;
+            
+            drawConnectionLine(startX, startY, currentX, currentY);
+        }
+
+        function onConnectionEnd(event) {
+            if (!connecting) return;
+            
+            connecting = false;
+            document.removeEventListener('mousemove', onConnectionDrag);
+            document.removeEventListener('mouseup', onConnectionEnd);
+            
+            clearConnectionLine();
+            
+            // Check if we're over an input port
+            const targetElement = document.elementFromPoint(event.clientX, event.clientY);
+            const inputPort = targetElement?.closest('.node-port.input');
+            
+            if (inputPort) {
+                const targetNodeId = inputPort.closest('.workflow-node').id;
+                const targetPortId = inputPort.dataset.portId;
+                
+                if (targetNodeId !== connectionStart.nodeId) {
+                    createConnection(connectionStart.nodeId, connectionStart.portId, targetNodeId, targetPortId);
+                }
+            }
+            
+            connectionStart = null;
+            console.log('Connection ended');
+        }
+
+        function createConnection(sourceNodeId, sourcePortId, targetNodeId, targetPortId) {
+            const connection = {
+                id: 'connection_' + connectionIdCounter++,
+                sourceNodeId,
+                sourcePortId,
+                targetNodeId,
+                targetPortId
+            };
+            
+            workflowConnections.push(connection);
+            console.log('Connection created:', connection);
+        }
+
+        function drawConnectionLine(x1, y1, x2, y2) {
+            const overlay = document.getElementById('connectionOverlay');
+            overlay.innerHTML = `
+                <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" 
+                      stroke="#007bff" stroke-width="2" stroke-dasharray="5,5"/>
+            `;
+        }
+
+        function clearConnectionLine() {
+            const overlay = document.getElementById('connectionOverlay');
+            overlay.innerHTML = '';
+        }
+
+        // UI Functions
+        function hideWelcome() {
+            const welcomeScreen = document.getElementById('welcomeScreen');
+            if (welcomeScreen) {
+                welcomeScreen.classList.add('hidden');
+            }
+        }
+
+        function showTemplates() {
+            document.getElementById('templatesModal').classList.remove('hidden');
+            closeMobilePanels();
+        }
+
+        function hideTemplates() {
+            document.getElementById('templatesModal').classList.add('hidden');
+        }
+
+        function createNewWorkflow() {
+            if (workflowNodes.length > 0 && !confirm('This will clear the current workflow. Continue?')) {
+                return;
+            }
+            
+            clearCanvas();
+            hideWelcome();
+            closeMobilePanels();
+            console.log('New workflow created');
+        }
+
+        function clearCanvas() {
+            workflowNodes = [];
+            workflowConnections = [];
+            selectedNode = null;
+            
+            const canvas = document.getElementById('workflowCanvas');
+            const nodes = canvas.querySelectorAll('.workflow-node');
+            nodes.forEach(node => node.remove());
+            
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+            updatePropertiesPanel();
+            
+            // Hide properties panel button on mobile
+            if (window.innerWidth <= 1024) {
+                const propertiesBtn = document.querySelector('.mobile-menu-btn[onclick="togglePropertiesPanel()"]');
+                if (propertiesBtn) {
+                    propertiesBtn.style.display = 'none';
+                }
+            }
+            
+            console.log('Canvas cleared');
+        }
+
+        function saveWorkflow() {
+            currentWorkflow.nodes = workflowNodes;
+            currentWorkflow.connections = workflowConnections;
+            
+            showLoading('Saving workflow...');
+            
+            console.log('Saving workflow:', currentWorkflow);
+            
+            // Simulate API call
+            setTimeout(() => {
+                hideLoading();
+                showExecutionStatus('success', 'Workflow saved successfully!');
+            }, 1000);
+        }
+
+        function runWorkflow() {
+            if (workflowNodes.length === 0) {
+                alert('Please add some nodes to your workflow first.');
+                return;
+            }
+            
+            showLoading('Executing workflow...');
+            console.log('Running workflow with', workflowNodes.length, 'nodes');
+            
+            // Execute each node and show results
+            workflowNodes.forEach((node, index) => {
+                setTimeout(() => {
+                    executeNodeWithResults(node);
+                }, index * 800);
+            });
+            
+            setTimeout(() => {
+                hideLoading();
+                showExecutionStatus('completed', 'Workflow executed successfully with results!', {
+                    nodesProcessed: workflowNodes.length,
+                    executionTime: '2.3s',
+                    result: 'All nodes completed with results displayed'
+                });
+            }, workflowNodes.length * 800 + 1000);
+        }
+
+        function executeNodeWithResults(node) {
+            const nodeElement = document.getElementById(node.id);
+            if (!nodeElement) return;
+
+            // Add execution indicator
+            nodeElement.classList.add('node-running');
+            const executionIndicator = document.createElement('div');
+            executionIndicator.className = 'execution-indicator';
+            executionIndicator.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Running...';
+            nodeElement.appendChild(executionIndicator);
+
+            setTimeout(() => {
+                // Remove execution indicator
+                nodeElement.classList.remove('node-running');
+                executionIndicator.remove();
+
+                // Generate and display results based on node type
+                const results = generateNodeResults(node);
+                displayNodeResults(node, results);
+
+                // Add success indicator
+                const successIndicator = document.createElement('div');
+                successIndicator.className = 'execution-success';
+                successIndicator.innerHTML = '<i class="fas fa-check-circle"></i> Complete';
+                nodeElement.appendChild(successIndicator);
+
+                setTimeout(() => successIndicator.remove(), 3000);
+            }, 1500);
+        }
+
+        function generateNodeResults(node) {
+            switch (node.type) {
+                case 'ai-sentiment':
+                    return {
+                        sentiment: 'Positive',
+                        score: 0.85,
+                        confidence: 0.92,
+                        details: {
+                            positive: 0.85,
+                            neutral: 0.10,
+                            negative: 0.05
+                        }
+                    };
+                
+                case 'ai-text':
+                    return {
+                        generatedText: 'This is a sample AI-generated response based on your prompt. The text has been processed using advanced language models.',
+                        tokenCount: 23,
+                        confidence: 0.89
+                    };
+                
+                case 'ai-image':
+                    return {
+                        description: 'A professional business meeting with people discussing charts and graphs around a conference table',
+                        tags: ['business', 'meeting', 'office', 'professional'],
+                        objects: [
+                            { name: 'table', confidence: 0.95 },
+                            { name: 'chairs', confidence: 0.92 },
+                            { name: 'laptop', confidence: 0.88 }
+                        ],
+                        confidence: 0.94
+                    };
+                
+                case 'ai-speech':
+                    return {
+                        transcription: 'Hello, this is a sample transcription of the audio file. The speech-to-text conversion was successful.',
+                        confidence: 0.91,
+                        language: 'en-US',
+                        duration: '5.2 seconds'
+                    };
+                
+                case 'ai-translate':
+                    return {
+                        translatedText: 'Hola, este es un texto traducido de ejemplo.',
+                        sourceLanguage: 'en',
+                        targetLanguage: 'es',
+                        confidence: 0.96
+                    };
+                
+                case 'automation-email':
+                    return {
+                        status: 'sent',
+                        messageId: 'msg_' + Math.random().toString(36).substr(2, 9),
+                        timestamp: new Date().toISOString(),
+                        recipients: 1
+                    };
+                
+                case 'automation-slack':
+                    return {
+                        status: 'posted',
+                        messageId: 'slack_' + Math.random().toString(36).substr(2, 9),
+                        channel: '#general',
+                        timestamp: new Date().toISOString()
+                    };
+                
+                default:
+                    return {
+                        status: 'completed',
+                        output: 'Node executed successfully',
+                        timestamp: new Date().toISOString()
+                    };
+            }
+        }
+
+        function displayNodeResults(node, results) {
+            const nodeElement = document.getElementById(node.id);
+            if (!nodeElement) return;
+
+            // Remove any existing results
+            const existingResults = nodeElement.querySelector('.node-results');
+            if (existingResults) existingResults.remove();
+
+            // Create results display
+            const resultsDiv = document.createElement('div');
+            resultsDiv.className = 'node-results';
+            
+            let resultsHTML = '<div class="results-header"><i class="fas fa-chart-line"></i> Results</div>';
+            
+            switch (node.type) {
+                case 'ai-sentiment':
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Sentiment:</strong> <span class="sentiment-${results.sentiment.toLowerCase()}">${results.sentiment}</span>
+                        </div>
+                        <div class="result-item">
+                            <strong>Score:</strong> ${(results.score * 100).toFixed(1)}%
+                        </div>
+                        <div class="result-item">
+                            <strong>Confidence:</strong> ${(results.confidence * 100).toFixed(1)}%
+                        </div>
+                        <div class="result-breakdown">
+                            <div>Positive: ${(results.details.positive * 100).toFixed(1)}%</div>
+                            <div>Neutral: ${(results.details.neutral * 100).toFixed(1)}%</div>
+                            <div>Negative: ${(results.details.negative * 100).toFixed(1)}%</div>
+                        </div>
+                    `;
+                    break;
+                
+                case 'ai-text':
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Generated Text:</strong>
+                            <div class="generated-text">${results.generatedText}</div>
+                        </div>
+                        <div class="result-item">
+                            <strong>Tokens:</strong> ${results.tokenCount}
+                        </div>
+                    `;
+                    break;
+                
+                case 'ai-image':
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Description:</strong>
+                            <div class="description-text">${results.description}</div>
+                        </div>
+                        <div class="result-item">
+                            <strong>Tags:</strong> ${results.tags.join(', ')}
+                        </div>
+                        <div class="result-item">
+                            <strong>Objects:</strong>
+                            ${results.objects.map(obj => `<span class="object-tag">${obj.name} (${(obj.confidence * 100).toFixed(0)}%)</span>`).join(' ')}
+                        </div>
+                    `;
+                    break;
+                
+                case 'ai-speech':
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Transcription:</strong>
+                            <div class="transcription-text">${results.transcription}</div>
+                        </div>
+                        <div class="result-item">
+                            <strong>Language:</strong> ${results.language}
+                        </div>
+                        <div class="result-item">
+                            <strong>Duration:</strong> ${results.duration}
+                        </div>
+                    `;
+                    break;
+                
+                case 'ai-translate':
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Translation:</strong>
+                            <div class="translated-text">${results.translatedText}</div>
+                        </div>
+                        <div class="result-item">
+                            <strong>Language:</strong> ${results.sourceLanguage} → ${results.targetLanguage}
+                        </div>
+                    `;
+                    break;
+                
+                case 'automation-email':
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Status:</strong> <span class="status-success">✓ ${results.status}</span>
+                        </div>
+                        <div class="result-item">
+                            <strong>Message ID:</strong> ${results.messageId}
+                        </div>
+                        <div class="result-item">
+                            <strong>Recipients:</strong> ${results.recipients}
+                        </div>
+                    `;
+                    break;
+                
+                case 'automation-slack':
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Status:</strong> <span class="status-success">✓ ${results.status}</span>
+                        </div>
+                        <div class="result-item">
+                            <strong>Channel:</strong> ${results.channel}
+                        </div>
+                        <div class="result-item">
+                            <strong>Message ID:</strong> ${results.messageId}
+                        </div>
+                    `;
+                    break;
+                
+                default:
+                    resultsHTML += `
+                        <div class="result-item">
+                            <strong>Status:</strong> <span class="status-success">✓ ${results.status}</span>
+                        </div>
+                        <div class="result-item">
+                            <strong>Output:</strong> ${results.output}
+                        </div>
+                    `;
+            }
+            
+            resultsDiv.innerHTML = resultsHTML;
+            nodeElement.appendChild(resultsDiv);
+
+            // Store results in node object
+            node.executionResults = results;
+        }
+
+        function createFromTemplate(templateId) {
+            hideTemplates();
+            clearCanvas();
+            
+            console.log('Creating from template:', templateId);
+            
+            // Template definitions
+            const templates = {
+                'customer-support': [
+                    { type: 'data-input', name: 'Customer Message', x: 50, y: 100 },
+                    { type: 'ai-sentiment', name: 'Analyze Sentiment', x: 300, y: 100 },
+                    { type: 'logic-condition', name: 'Route by Sentiment', x: 550, y: 100 },
+                    { type: 'ai-text', name: 'Generate Response', x: 800, y: 50 },
+                    { type: 'automation-email', name: 'Send Response', x: 800, y: 150 }
+                ],
+                'content-moderation': [
+                    { type: 'data-input', name: 'User Content', x: 50, y: 100 },
+                    { type: 'ai-text', name: 'Content Analysis', x: 300, y: 100 },
+                    { type: 'logic-condition', name: 'Safety Check', x: 550, y: 100 },
+                    { type: 'automation-slack', name: 'Alert Moderators', x: 800, y: 100 }
+                ],
+                'document-processing': [
+                    { type: 'data-input', name: 'Document Upload', x: 50, y: 100 },
+                    { type: 'ai-image', name: 'OCR Extraction', x: 300, y: 100 },
+                    { type: 'ai-text', name: 'Information Extraction', x: 550, y: 100 },
+                    { type: 'data-output', name: 'Results', x: 800, y:100 }
+                ],
+                'social-media-monitor': [
+                    { type: 'automation-zapier', name: 'Social Media Trigger', x: 50, y: 100 },
+                    { type: 'ai-sentiment', name: 'Analyze Mention', x: 300, y: 100 },
+                    { type: 'logic-condition', name: 'Filter Important', x: 550, y: 100 },
+                    { type: 'automation-slack', name: 'Notify Team', x: 800, y: 100 }
+                ]
+            };
+            
+            const template = templates[templateId];
+            if (template) {
+                template.forEach(nodeData => {
+                    createNode(nodeData.type, nodeData.x, nodeData.y);
+                    const lastNode = workflowNodes[workflowNodes.length - 1];
+                    lastNode.name = nodeData.name;
+                    
+                    // Update the displayed name
+                    const nodeElement = document.getElementById(lastNode.id);
+                    const titleElement = nodeElement.querySelector('.node-title');
+                    titleElement.textContent = nodeData.name;
+                });
+                
+                hideWelcome();
+                console.log('Template created successfully');
+            }
+        }
+
+        function showLoading(message) {
+            document.getElementById('loadingMessage').textContent = message;
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        function showExecutionStatus(status, message, details = null) {
+            const statusElement = document.getElementById('executionStatus');
+            const titleElement = document.getElementById('statusTitle');
+            const contentElement = document.getElementById('statusContent');
+            
+            titleElement.textContent = `Execution Status: ${status}`;
+            
+            let content = `<p>${message}</p>`;
+            if (details) {
+                content += `
+                    <div style="margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 4px;">
+                        <h5>Execution Details:</h5>
+                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+                            <li>Nodes Processed: ${details.nodesProcessed}</li>
+                            <li>Execution Time: ${details.executionTime}</li>
+                            <li>Result: ${details.result}</li>
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            contentElement.innerHTML = content;
+            statusElement.classList.remove('hidden');
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideExecutionStatus();
+            }, 5000);
+        }
+
+        function hideExecutionStatus() {
+            document.getElementById('executionStatus').classList.add('hidden');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 's':
+                        e.preventDefault();
+                        saveWorkflow();
+                        break;
+                    case 'n':
+                        e.preventDefault();
+                        createNewWorkflow();
+                        break;
+                }
+            }
+            
+            // Delete key for selected nodes
+            if (e.key === 'Delete' && selectedNode) {
+                deleteNode(selectedNode.id);
+            }
+            
+            // Escape key to close mobile panels
+            if (e.key === 'Escape') {
+                closeMobilePanels();
+                hideTemplates();
+            }
+        });
+
+        // Error handling
+        window.addEventListener('error', function(e) {
+            console.error('Application error:', e);
+        });
+
+        // Prevent zoom on mobile when double tapping
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>
