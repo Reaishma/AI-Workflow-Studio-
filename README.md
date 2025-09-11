@@ -1,6 +1,6 @@
 # Visual AI Workflow Designer
 
-![Visual AI Workflow Designer](https://img.shields.io/badge/Status-Complete-brightgreen) ![Technology](https://img.shields.io/badge/Tech-HTML5%2BCSS3%2BJS-blue) ![License](https://img.shields.io/badge/License-MIT-green)
+![Visual AI Workflow Designer](https://img.shields.io/badge/Status-Complete-brightgreen) ![Technology](https://img.shields.io/badge/Tech-VUE.js%2BCSS3%2BJS-blue) ![License](https://img.shields.io/badge/License-MIT-green)
 
 A comprehensive low-code visual AI workflow editor that allows users to create AI-powered workflows without coding. The platform integrates Microsoft Azure cognitive services, Google Cloud AI platform, and automation tools like Zapier and Microsoft Power Automate.
 
