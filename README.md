@@ -8,6 +8,10 @@ A comprehensive low-code visual AI workflow editor that allows users to create A
 
 **Build powerful AI workflows visually** - No coding required! This platform provides a drag-and-drop interface for creating sophisticated AI automation workflows that can process text, images, audio, and integrate with popular business tools.
 
+## 🧑‍💻 Developer 
+
+**Reaishma N**
+
 ### 🎨 Key Features
 
 #### **Visual Workflow Designer**
@@ -62,15 +66,15 @@ Users: id, username, email, created_at
 ### Option 1: Standalone HTML File
 **Perfect for demos, prototyping, and simple deployments**
 
-1. **Download** the `visual-ai-workflow-designer.html` file
+1. **Download** the `index.html` file
 2. **Open** in any modern web browser
 3. **Start building** workflows immediately!
 
 ```bash
 # Simply open the file in your browser
-open visual-ai-workflow-designer.html
+open index.html
 # or
-firefox visual-ai-workflow-designer.html
+firefox index.html
 ```
 
 ### Option 2: Full Application Setup
@@ -274,7 +278,6 @@ Extend the component library by adding to the `componentDefinitions` object:
 ### **API Key Management**
 - Store API keys securely using environment variables
 - Never commit secrets to version control
-- Use Replit's secret management for deployed applications
 - Implement key rotation policies
 
 ### **Data Privacy**
@@ -320,8 +323,8 @@ Each component type should be tested for:
 
 ## 🚀 Deployment
 
-### **Replit Deployment**
-The application is optimized for Replit deployment:
+### *Deployment**
+
 
 ```bash
 # Frontend served on port 5000
@@ -329,7 +332,6 @@ npm run dev
 
 # Backend API configuration
 # Database automatically configured
-# Secrets managed through Replit interface
 ```
 
 ### **Production Deployment**
@@ -360,7 +362,7 @@ For production environments:
 
 ```
 visual-ai-workflow-designer/
-├── visual-ai-workflow-designer.html    # Standalone complete application
+├── index.html    # Standalone complete application
 ├── README.md                          # This documentation
 ├── services/                          # Backend services
 │   └── workflow/
@@ -409,7 +411,6 @@ visual-ai-workflow-designer/
 
 ### **Documentation**
 - Complete API documentation available
-- Video tutorials for common workflows
 - Best practices and design patterns
 - Troubleshooting guides
 
