@@ -1,0 +1,17 @@
+{
+  "name": "visual-workflows-editor",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:web": "cd apps/web && vite --host 0.0.0.0 --port 5000",
+    "build:web": "cd apps/web && vite build",
+    "preview:web": "cd apps/web && vite preview --port 4173",
+    "dev": "npm run dev:web"
+  },
+  "dependencies": {
+    "vue": "^3.3.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.2.3",
+    "vite": "^4.5.1"
+  }
+}
