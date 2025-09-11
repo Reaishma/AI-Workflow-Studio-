@@ -7,6 +7,7 @@ A comprehensive low-code visual AI workflow editor that allows users to create A
 ## 🎯 Project Overview
 
 **Build powerful AI workflows visually** - No coding required! This platform provides a drag-and-drop interface for creating sophisticated AI automation workflows that can process text, images, audio, and integrate with popular business tools.
+The platform features a visual workflow editor with real-time connections, an AI components library, automation tools, and logic control components for creating complex workflow automations.
 
 ## 🧑‍💻 Developer 
 
@@ -17,8 +18,10 @@ A comprehensive low-code visual AI workflow editor that allows users to create A
 #### **Visual Workflow Designer**
 - **Drag-and-Drop Interface** - Intuitive visual editor for building workflows
 - **Real-time Connections** - Connect components with visual connectors
+- **Component Library**: Categorized AI and automation components with standardized input/output interfaces
 - **Interactive Canvas** - Pan, zoom, and organize your workflow visually
 - **Live Execution** - Watch your workflow execute in real-time
+- **Visual Connections**: SVG-based connection lines between workflow nodes
 
 #### **🤖 AI Components Library**
 - **Text Generation** - GPT-3.5, GPT-4, Claude 3 integration
@@ -27,11 +30,20 @@ A comprehensive low-code visual AI workflow editor that allows users to create A
 - **Language Translation** - Multi-language support with Google/Azure APIs
 - **Sentiment Analysis** - Emotional tone detection and analysis
 
+## AI Service Integration Layer
+The platform integrates multiple AI providers through a **unified component interface**:
+
+- **OpenAI Integration**: GPT models for text generation and processing
+- **Azure Cognitive Services**: Computer vision, speech-to-text, and language services
+- **Google Cloud AI**: Translation services and additional AI capabilities
+- **Standardized Component Interface**: Uniform input/output structure across all AI services
+
 #### **⚡ Automation Components**
 - **Email Integration** - SMTP configuration and automated sending
 - **Slack Messaging** - Bot integration and team notifications
 - **Zapier Webhooks** - Trigger external automation workflows
 - **Power Automate** - Microsoft flow integration
+- **RESTful API Connectors**: Generic HTTP request components for custom integrations
 
 #### **🔧 Logic & Control Components**
 - **Conditional Logic** - If/then decision making
@@ -42,16 +54,23 @@ A comprehensive low-code visual AI workflow editor that allows users to create A
 ### 🏗️ Architecture
 
 #### **Frontend Technologies**
+
+The application uses a **hybrid frontend approach** combining both Vue.js 3 with Vite and standalone HTML/CSS/JavaScript implementations:
+
+- **Vue.js 3 Application**: Modern SPA framework with Vite build tooling for the main application interface
 - **HTML5/CSS3** - Modern responsive design
 - **Vanilla JavaScript** - No framework dependencies
 - **Font Awesome** - Professional iconography
 - **SVG Graphics** - Scalable connection lines and diagrams
+- **Component-Based Design**: Modular approach with reusable AI component library and workflow canvas
 
 #### **Backend Integration** (.NET Core API)
 - **RESTful APIs** - Workflow management and execution
 - **Entity Framework** - Data persistence and relationships
 - **JWT Authentication** - Secure user management
 - **Azure/Google Cloud** - AI service integrations
+- **Swagger Integration**: API documentation and testing interface
+
 
 #### **Database Schema** (PostgreSQL)
 ```sql
@@ -60,6 +79,35 @@ Workflows: id, name, description, definition, version, user_id
 WorkflowExecutions: id, workflow_id, status, start_time, end_time
 Users: id, username, email, created_at
 ```
+
+## External Dependencies
+
+### Core Technology Stack
+- **Vue.js 3**: Frontend framework for reactive user interfaces
+- **Vite**: Modern build tool and development server
+- **Font Awesome 6**: Icon library for UI components
+- **.NET Core**: Backend API framework
+- **Entity Framework**: Database ORM and data access layer
+
+### AI Service Providers
+- **OpenAI API**: GPT-3.5 and GPT-4 models for text generation
+- **Microsoft Azure Cognitive Services**: Computer vision, speech processing, and language understanding
+- **Google Cloud AI Platform**: Translation services and additional AI capabilities
+
+### Authentication and Security
+- **JWT (JSON Web Tokens)**: Stateless authentication mechanism
+- **Swagger/OpenAPI**: API documentation and testing interface
+
+### Third-Party Integrations
+- **SMTP Services**: Email delivery capabilities
+- **Slack API**: Team messaging and bot integration
+- **Zapier Webhooks**: External automation platform connectivity
+- **Microsoft Power Automate**: Enterprise workflow integration
+
+### Development and Build Tools
+- **Node.js/NPM**: JavaScript runtime and package management
+- **Vite Dev Server**: Hot module replacement and development environment
+- **ESBuild**: Fast JavaScript bundling and compilation
 
 ## 🚀 Getting Started
 
