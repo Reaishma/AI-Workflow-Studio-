@@ -12,6 +12,8 @@ A comprehensive low-code visual AI workflow editor that allows users to create A
 **Build powerful AI workflows visually** - No coding required! This platform provides a drag-and-drop interface for creating sophisticated AI automation workflows that can process text, images, audio, and integrate with popular business tools.
 The platform features a visual workflow editor with real-time connections, an AI components library, automation tools, and logic control components for creating complex workflow automations.
 
+![AI components](https://github.com/Reaishma/AI-Workflow-Studio-/blob/main/Frontend%28Vue.js%29%2Fchrome_screenshot_Sep%2016%2C%202025%2010_40_41%20AM%20GMT%2B05_30.png)
+
 ## 🧑‍💻 Developer 
 
 **Reaishma N**
