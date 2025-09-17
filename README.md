@@ -28,6 +28,8 @@ The platform features a visual workflow editor with real-time connections, an AI
 - **Live Execution** - Watch your workflow execute in real-time
 - **Visual Connections**: SVG-based connection lines between workflow nodes
 
+![workflows](https://github.com/Reaishma/AI-Workflow-Studio-/blob/main/Frontend%28Vue.js%29%2Fchrome_screenshot_Sep%2016%2C%202025%2010_35_02%20AM%20GMT%2B05_30.png)
+
 #### **🤖 AI Components Library**
 - **Text Generation** - GPT-3.5, GPT-4, Claude 3 integration
 - **Image Analysis** - Computer vision, object detection, OCR
