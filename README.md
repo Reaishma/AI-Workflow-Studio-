@@ -184,6 +184,8 @@ npm run dev
 
 ### Example Workflows
 
+![Samples](https://github.com/Reaishma/AI-Workflow-Studio-/blob/main/Frontend%28Vue.js%29%2Fchrome_screenshot_Sep%2016%2C%202025%2010_34_23%20AM%20GMT%2B05_30.png)
+
 #### 🎧 **Customer Support Automation**
 ```
 Customer Message → Sentiment Analysis → Condition → AI Response → Email/Slack
