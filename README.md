@@ -351,6 +351,8 @@ Extend the component library by adding to the `componentDefinitions` object:
 
 ## 📊 Monitoring & Analytics
 
+![Execution](https://github.com/Reaishma/AI-Workflow-Studio-/blob/main/Frontend%28Vue.js%29%2Fchrome_screenshot_Sep%2016%2C%202025%2010_41_48%20AM%20GMT%2B05_30.png)
+
 ### **Execution Metrics**
 - Workflow execution count and frequency
 - Average execution time per component type
